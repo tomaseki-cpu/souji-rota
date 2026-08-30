@@ -130,16 +130,14 @@ firebase.initializeApp({
 const fbDb=firebase.database();
 
 const P=[
-  {id:'living',n:'リビング'},
-  {id:'dining',n:'ダイニング'},
+  {id:'ldk',n:'リビング・ダイニング'},
   {id:'kitchen',n:'キッチン'},
-  {id:'bath',n:'浴室'},
-  {id:'toilet',n:'トイレ'},
+  {id:'bath',n:'浴室',a:['掃除']},
+  {id:'toilet',n:'トイレ',a:['掃除']},
   {id:'washroom',n:'洗面所'},
   {id:'room_t',n:'とうま部屋'},
   {id:'room_m',n:'まどか部屋'},
-  {id:'entrance',n:'玄関'},
-  {id:'balcony',n:'ベランダ'},
+  {id:'entrance',n:'玄関',a:['掃除']},
   {id:'bedroom',n:'寝室'},
 ];
 const A=['掃除機','クイックルワイパー','整理整頓'];
@@ -171,7 +169,7 @@ function stats(){
   let nA=0,nB=0;
   const touched=P.map(p=>{
     let a=0,b=0;
-    A.forEach(act=>{const w=done[p.id+'-'+act];if(w==='a')a++;if(w==='b')b++});
+    (p.a||A).forEach(act=>{const w=done[p.id+'-'+act];if(w==='a')a++;if(w==='b')b++});
     nA+=a;nB+=b;
     if(!a&&!b)return'';if(a&&b)return'x';return a?'a':'b';
   });
@@ -193,7 +191,7 @@ function render(){
   if(tab==='tasks'){
     var h='<div class="sec">タスク</div>';
     h+=P.map(function(p){return'<div class="pl"><div class="pl-name">'+p.n+'</div><div class="acts">'+
-      A.map(function(a){var k=p.id+'-'+a,w=done[k];
+      (p.a||A).map(function(a){var k=p.id+'-'+a,w=done[k];
         return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'" data-key="'+k+'">'+a+'</button>'
       }).join('')+'</div></div>'}).join('');
 
@@ -214,7 +212,7 @@ function render(){
 
     r+='<div class="sec">場所別</div>';
     r+=P.map(function(p){
-      var acts=A.filter(function(a){return done[p.id+'-'+a]});
+      var acts=(p.a||A).filter(function(a){return done[p.id+'-'+a]});
       var inner='';
       if(acts.length){
         inner=acts.map(function(a){var w=done[p.id+'-'+a];
