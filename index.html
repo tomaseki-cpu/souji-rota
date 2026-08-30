@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>おうち掃除ローテ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --bg:#FAFAFA;--tx:#1A1A1A;--t2:#999;--bd:#E0E0E0;
+    --a:#C93A2B;--ab:rgba(201,58,43,.06);
+    --b:#2663A8;--bb:rgba(38,99,168,.06);
+    --f:'Noto Sans JP','Hiragino Sans',system-ui,sans-serif;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#111114;--tx:#ECECEC;--t2:#666;--bd:#2A2A2D;
+      --a:#E85847;--ab:rgba(232,88,71,.08);
+      --b:#4A8FD4;--bb:rgba(74,143,212,.08);
+    }
+  }
+
+  *{box-sizing:border-box}
+  body{font-family:var(--f);background:var(--bg);color:var(--tx);
+    max-width:480px;margin:0 auto;padding:32px 20px 72px;
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+
+  .hdr{margin-bottom:20px}
+  .hdr h1{font-size:1.4rem;font-weight:900;letter-spacing:-.02em;line-height:1.2;margin-bottom:4px}
+  .hdr .date{font-size:.78rem;font-weight:300;color:var(--t2);letter-spacing:.02em}
+
+  .who{display:flex;margin-bottom:16px}
+  .who-btn{flex:1;display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--f);font-size:.92rem;font-weight:700;padding:14px 16px;
+    border:2px solid var(--bd);background:transparent;color:var(--t2);
+    cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none}
+  .who-btn+.who-btn{border-left:none}
+  .who-n{font-size:1.1rem;font-weight:900}
+  .who-btn.wa.on{border-color:var(--a);background:var(--a);color:#fff}
+  .who-btn.wb.on{border-color:var(--b);background:var(--b);color:#fff}
+  .who-btn:not(.on):active{transform:scale(.98)}
+
+  .prog{display:flex;align-items:center;gap:4px;justify-content:center;margin-bottom:20px}
+  .sq{width:18px;height:18px;border:1.5px solid var(--bd);transition:background .2s,border-color .2s}
+  .sq.sa{background:var(--a);border-color:var(--a)}
+  .sq.sb{background:var(--b);border-color:var(--b)}
+  .sq.sx{background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);border-color:var(--tx)}
+  .prog-n{font-size:.78rem;font-weight:700;color:var(--t2);margin-left:8px}
+
+  .tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:24px}
+  .tab{flex:1;font-family:var(--f);font-size:.8rem;font-weight:400;color:var(--t2);
+    background:none;border:none;border-bottom:2px solid transparent;
+    padding:8px 0;margin-bottom:-1px;cursor:pointer;transition:all .12s;letter-spacing:.04em}
+  .tab.on{color:var(--tx);font-weight:700;border-bottom-color:var(--tx)}
+
+  .sec{font-size:.7rem;font-weight:700;letter-spacing:.08em;color:var(--t2);
+    margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .sec::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+  .pl{margin-bottom:18px}
+  .pl-name{font-size:.88rem;font-weight:700;margin-bottom:6px}
+  .acts{display:flex;flex-wrap:wrap;gap:4px}
+  .act{font-family:var(--f);font-size:.7rem;font-weight:400;
+    padding:5px 10px;border:1.5px solid var(--bd);background:transparent;color:var(--t2);
+    cursor:pointer;transition:all .1s;-webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none}
+  .act:active{transform:scale(.95)}
+  .act.da{background:var(--a);border-color:var(--a);color:#fff;font-weight:700}
+  .act.db{background:var(--b);border-color:var(--b);color:#fff;font-weight:700}
+
+  .mo-acts{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:24px}
+
+  .rpt-hero{text-align:center;margin-bottom:24px}
+  .rpt-big{font-size:3.5rem;font-weight:900;line-height:1}
+  .rpt-of{font-size:1rem;font-weight:300;color:var(--t2)}
+  .rpt-stats{display:flex;gap:12px;margin-bottom:28px}
+  .rpt-st{flex:1;padding:16px;border-top:3px solid}
+  .rpt-st.sa{border-color:var(--a);background:var(--ab)}
+  .rpt-st.sb{border-color:var(--b);background:var(--bb)}
+  .rpt-st-n{font-size:.72rem;font-weight:700;margin-bottom:6px}
+  .rpt-st.sa .rpt-st-n{color:var(--a)} .rpt-st.sb .rpt-st-n{color:var(--b)}
+  .rpt-st-num{font-size:2rem;font-weight:900;line-height:1}
+
+  .rpt-pl{margin-bottom:14px}
+  .rpt-pl-name{font-size:.82rem;font-weight:700;margin-bottom:4px}
+  .rpt-pl-acts{display:flex;flex-wrap:wrap;gap:3px}
+  .rpt-tag{font-size:.65rem;padding:3px 8px;font-weight:700;color:#fff}
+  .rpt-tag.ra{background:var(--a)} .rpt-tag.rb{background:var(--b)}
+  .rpt-none{font-size:.75rem;color:var(--t2);font-weight:300;font-style:italic}
+
+  .ft{text-align:center;margin-top:32px;font-size:.62rem;color:var(--t2);font-weight:300;letter-spacing:.03em;line-height:1.6}
+  .sync{display:inline-block;margin-top:6px;font-size:.58rem;padding:2px 8px;letter-spacing:.06em}
+  .sync.on{background:var(--tx);color:var(--bg)}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="hdr">
+    <h1>おうち掃除ローテ</h1>
+    <div class="date" id="date"></div>
+  </div>
+  <div id="who"></div>
+  <div id="prog"></div>
+  <div class="tabs">
+    <button class="tab on" id="t1">タスク</button>
+    <button class="tab" id="t2">レポート</button>
+  </div>
+  <div id="v1"></div>
+  <div id="v2" hidden></div>
+  <div class="ft">名前を選んでタスクをタップ ・ 毎週月曜リセット<br><span class="sync" id="sync"></span></div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCm8YFbCkmAm1wKZTjloZTfvDqRYw79U1I",
+  authDomain:"souji-rota.firebaseapp.com",
+  databaseURL:"https://souji-rota-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"souji-rota",
+  storageBucket:"souji-rota.firebasestorage.app",
+  messagingSenderId:"775580575167",
+  appId:"1:775580575167:web:f0732ba4802860fc2dad0a"
+});
+const fbDb=firebase.database();
+
+const P=[
+  {id:'living',n:'リビング'},
+  {id:'dining',n:'ダイニング'},
+  {id:'kitchen',n:'キッチン'},
+  {id:'bath',n:'浴室'},
+  {id:'toilet',n:'トイレ'},
+  {id:'washroom',n:'洗面所'},
+  {id:'room_t',n:'とうま部屋'},
+  {id:'room_m',n:'まどか部屋'},
+  {id:'entrance',n:'玄関'},
+  {id:'balcony',n:'ベランダ'},
+  {id:'bedroom',n:'寝室'},
+];
+const A=['掃除機','クイックルワイパー','整理整頓'];
+const MO_ETC=[
+  {id:'ventfan',n:'換気扇'},
+  {id:'aircon',n:'エアコンフィルター'},
+  {id:'windows',n:'窓・網戸'},
+  {id:'toilet_vent',n:'トイレ換気扇フィルター'},
+  {id:'wash_vent',n:'洗面台換気扇フィルター'},
+];
+const MO_FUKI=P.map(p=>({id:'fuki_'+p.id,n:p.n+' 拭き掃除'}));
+const MO=[...MO_ETC,...MO_FUKI];
+const DN=['日','月','火','水','木','金','土'];
+
+let nm={a:'とうま',b:'まどか'},done={},moDone={},me='a',tab='tasks';
+
+function wk(){const d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));
+  return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
+function mo_(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)}
+function dateStr(){const d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));
+  const s=new Date(m);s.setDate(m.getDate()+6);
+  return(m.getMonth()+1)+'.'+m.getDate()+' '+DN[m.getDay()]+' — '+(s.getMonth()+1)+'.'+s.getDate()+' '+DN[s.getDay()]}
+
+function svDone(){fbDb.ref('week/'+wk()).set({done:done})}
+function svMoDone(){fbDb.ref('month/'+mo_()).set({moDone:moDone})}
+function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
+
+function stats(){
+  let nA=0,nB=0;
+  const touched=P.map(p=>{
+    let a=0,b=0;
+    A.forEach(act=>{const w=done[p.id+'-'+act];if(w==='a')a++;if(w==='b')b++});
+    nA+=a;nB+=b;
+    if(!a&&!b)return'';if(a&&b)return'x';return a?'a':'b';
+  });
+  return{nA,nB,touched,total:nA+nB,covered:touched.filter(t=>t).length};
+}
+
+function render(){
+  document.getElementById('date').textContent=dateStr();
+  const st=stats();
+
+  document.getElementById('who').innerHTML='<div class="who">'+
+    '<button class="who-btn wa'+(me==='a'?' on':'')+'" data-me="a"><span>'+nm.a+'</span><span class="who-n">'+st.nA+'</span></button>'+
+    '<button class="who-btn wb'+(me==='b'?' on':'')+'" data-me="b"><span>'+nm.b+'</span><span class="who-n">'+st.nB+'</span></button></div>';
+
+  document.getElementById('prog').innerHTML='<div class="prog">'+
+    st.touched.map(function(t){return'<div class="sq'+(t==='a'?' sa':t==='b'?' sb':t==='x'?' sx':'')+'"></div>'}).join('')+
+    '<span class="prog-n">'+st.covered+'/'+P.length+'</span></div>';
+
+  if(tab==='tasks'){
+    var h='<div class="sec">タスク</div>';
+    h+=P.map(function(p){return'<div class="pl"><div class="pl-name">'+p.n+'</div><div class="acts">'+
+      A.map(function(a){var k=p.id+'-'+a,w=done[k];
+        return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'" data-key="'+k+'">'+a+'</button>'
+      }).join('')+'</div></div>'}).join('');
+
+    h+='<div class="sec">月イチ <span style="font-weight:400">'+MO.filter(function(t){return moDone[t.id]}).length+'/'+MO.length+'</span></div>';
+    h+='<div class="mo-acts">'+MO.map(function(t){var w=moDone[t.id];
+      return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'" data-mkey="'+t.id+'">'+t.n+'</button>'
+    }).join('')+'</div>';
+
+    document.getElementById('v1').innerHTML=h;
+    document.getElementById('v1').hidden=false;
+    document.getElementById('v2').hidden=true;
+  } else {
+    var r='<div class="rpt-hero"><div class="rpt-big">'+st.covered+'</div>'+
+      '<div class="rpt-of">/ '+P.length+' 箇所</div></div>';
+    r+='<div class="rpt-stats">'+
+      '<div class="rpt-st sa"><div class="rpt-st-n">'+nm.a+'</div><div class="rpt-st-num">'+st.nA+'</div></div>'+
+      '<div class="rpt-st sb"><div class="rpt-st-n">'+nm.b+'</div><div class="rpt-st-num">'+st.nB+'</div></div></div>';
+
+    r+='<div class="sec">場所別</div>';
+    r+=P.map(function(p){
+      var acts=A.filter(function(a){return done[p.id+'-'+a]});
+      var inner='';
+      if(acts.length){
+        inner=acts.map(function(a){var w=done[p.id+'-'+a];
+          return'<span class="rpt-tag r'+w+'">'+a+'</span>'}).join('');
+      } else {
+        inner='<span class="rpt-none">未実施</span>';
+      }
+      return'<div class="rpt-pl"><div class="rpt-pl-name">'+p.n+'</div><div class="rpt-pl-acts">'+inner+'</div></div>';
+    }).join('');
+
+    var mFin=MO.filter(function(t){return moDone[t.id]});
+    r+='<div class="sec">月イチ <span style="font-weight:400">'+mFin.length+'/'+MO.length+'</span></div>';
+    r+=MO.map(function(t){var w=moDone[t.id];
+      return w?'<div class="rpt-pl"><div class="rpt-pl-acts"><span class="rpt-tag r'+w+'">'+t.n+'</span></div></div>'
+        :'<div class="rpt-pl"><span class="rpt-none">'+t.n+'</span></div>'}).join('');
+
+    document.getElementById('v2').innerHTML=r;
+    document.getElementById('v1').hidden=true;
+    document.getElementById('v2').hidden=false;
+  }
+}
+
+function setTab(t){tab=t;
+  document.getElementById('t1').classList.toggle('on',t==='tasks');
+  document.getElementById('t2').classList.toggle('on',t==='report');render()}
+
+document.getElementById('t1').addEventListener('click',function(){setTab('tasks')});
+document.getElementById('t2').addEventListener('click',function(){setTab('report')});
+
+document.getElementById('app').addEventListener('click',function(e){
+  var wb=e.target.closest('.who-btn');
+  if(wb){me=wb.dataset.me;svMe();render();return}
+
+  var act=e.target.closest('.act[data-key]');
+  if(act){var k=act.dataset.key,c=done[k];
+    if(!c)done[k]=me;
+    else if(c===me)delete done[k];
+    svDone();render();return}
+
+  var mk=e.target.closest('.act[data-mkey]');
+  if(mk){var id=mk.dataset.mkey,c2=moDone[id];
+    if(!c2)moDone[id]=me;
+    else if(c2===me)delete moDone[id];
+    svMoDone();render();return}
+});
+
+try{me=localStorage.getItem('souji_me')||'a'}catch(e){}
+render();
+
+var el=document.getElementById('sync');
+fbDb.ref('week/'+wk()).on('value',function(snap){
+  done=snap.val()?snap.val().done||{}:{};
+  el.textContent='同期中';el.classList.add('on');
+  render();
+},function(){el.textContent='オフライン'});
+fbDb.ref('month/'+mo_()).on('value',function(snap){
+  moDone=snap.val()?snap.val().moDone||{}:{};
+  render();
+});
+</script>
+
+</body>
+</html>
