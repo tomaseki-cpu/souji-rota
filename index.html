@@ -32,7 +32,15 @@
 
   .hdr{margin-bottom:20px}
   .hdr h1{font-size:1.4rem;font-weight:900;letter-spacing:-.02em;line-height:1.2;margin-bottom:4px}
-  .hdr .date{font-size:.78rem;font-weight:300;color:var(--t2);letter-spacing:.02em}
+  .nav{display:flex;align-items:center;gap:10px}
+  .nav-btn{font-size:.9rem;color:var(--t2);cursor:pointer;padding:4px 2px;
+    -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+    transition:color .12s;line-height:1}
+  .nav-btn:active{color:var(--tx)}
+  .nav-btn.off{visibility:hidden;pointer-events:none}
+  .date{font-size:.78rem;font-weight:300;color:var(--t2);letter-spacing:.02em}
+  .past-badge{display:inline-block;font-size:.58rem;font-weight:700;
+    padding:2px 6px;background:var(--tx);color:var(--bg);margin-left:8px;letter-spacing:.04em;vertical-align:middle}
 
   .who{display:flex;margin-bottom:16px}
   .who-btn{flex:1;display:flex;align-items:center;justify-content:space-between;
@@ -73,6 +81,8 @@
   .act:active{transform:scale(.95)}
   .act.da{background:var(--a);border-color:var(--a);color:#fff;font-weight:700}
   .act.db{background:var(--b);border-color:var(--b);color:#fff;font-weight:700}
+  .past .act{cursor:default}
+  .past .act:active{transform:none}
 
   .mo-acts{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:24px}
 
@@ -104,7 +114,11 @@
 <div id="app">
   <div class="hdr">
     <h1>おうち掃除ローテ</h1>
-    <div class="date" id="date"></div>
+    <div class="nav">
+      <span class="nav-btn" id="navL">◀</span>
+      <span class="date" id="date"></span>
+      <span class="nav-btn off" id="navR">▶</span>
+    </div>
   </div>
   <div id="who"></div>
   <div id="prog"></div>
@@ -153,32 +167,60 @@ const MO=[...MO_ETC,...MO_FUKI];
 const DN=['日','月','火','水','木','金','土'];
 
 let nm={a:'とうま',b:'まどか'},done={},moDone={},me='a',tab='tasks';
+let vOff=0,vDone=null,vMoDone=null;
 
-function wk(){const d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));
-  return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
-function mo_(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)}
-function dateStr(){const d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));
-  const s=new Date(m);s.setDate(m.getDate()+6);
+function curMonday(){var d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));return m}
+function wk(){var m=curMonday();return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
+function mo_(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)}
+
+function viewMonday(){var m=curMonday();m.setDate(m.getDate()+vOff*7);return m}
+function viewWk(){var m=viewMonday();return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
+function viewMo(){var m=viewMonday();return m.getFullYear()+'-'+(m.getMonth()+1)}
+
+function dateLabel(){
+  var m=viewMonday(),s=new Date(m);s.setDate(m.getDate()+6);
   return(m.getMonth()+1)+'.'+m.getDate()+' '+DN[m.getDay()]+' — '+(s.getMonth()+1)+'.'+s.getDate()+' '+DN[s.getDay()]}
 
 function svDone(){fbDb.ref('week/'+wk()).set({done:done})}
 function svMoDone(){fbDb.ref('month/'+mo_()).set({moDone:moDone})}
 function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
 
-function stats(){
-  let nA=0,nB=0;
-  const touched=P.map(p=>{
-    let a=0,b=0;
-    (p.a||A).forEach(act=>{const w=done[p.id+'-'+act];if(w==='a')a++;if(w==='b')b++});
+function statsFor(d){
+  var nA=0,nB=0;
+  var touched=P.map(function(p){
+    var a=0,b=0;
+    (p.a||A).forEach(function(act){var w=d[p.id+'-'+act];if(w==='a')a++;if(w==='b')b++});
     nA+=a;nB+=b;
     if(!a&&!b)return'';if(a&&b)return'x';return a?'a':'b';
   });
-  return{nA,nB,touched,total:nA+nB,covered:touched.filter(t=>t).length};
+  return{nA:nA,nB:nB,touched:touched,covered:touched.filter(function(t){return t}).length}}
+
+function navWeek(dir){
+  vOff+=dir;
+  if(vOff>0)vOff=0;
+  if(vOff<0){
+    fbDb.ref('week/'+viewWk()).once('value',function(snap){
+      vDone=snap.val()?snap.val().done||{}:{};
+      var vm=viewMo();
+      fbDb.ref('month/'+vm).once('value',function(msnap){
+        vMoDone=msnap.val()?msnap.val().moDone||{}:{};
+        render();
+      });
+    });
+  } else {
+    vDone=null;vMoDone=null;
+    render();
+  }
 }
 
 function render(){
-  document.getElementById('date').textContent=dateStr();
-  const st=stats();
+  var past=vOff<0;
+  var cD=past?(vDone||{}):done;
+  var cM=past?(vMoDone||{}):moDone;
+  var st=statsFor(cD);
+
+  document.getElementById('date').innerHTML=dateLabel()+(past?'<span class="past-badge">過去</span>':'');
+  document.getElementById('navR').classList.toggle('off',vOff>=0);
 
   document.getElementById('who').innerHTML='<div class="who">'+
     '<button class="who-btn wa'+(me==='a'?' on':'')+'" data-me="a"><span>'+nm.a+'</span><span class="who-n">'+st.nA+'</span></button>'+
@@ -190,15 +232,17 @@ function render(){
 
   if(tab==='tasks'){
     var h='<div class="sec">タスク</div>';
+    h+=(past?'<div class="past">':'');
     h+=P.map(function(p){return'<div class="pl"><div class="pl-name">'+p.n+'</div><div class="acts">'+
-      (p.a||A).map(function(a){var k=p.id+'-'+a,w=done[k];
-        return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'" data-key="'+k+'">'+a+'</button>'
+      (p.a||A).map(function(a){var k=p.id+'-'+a,w=cD[k];
+        return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'"'+(past?'':' data-key="'+k+'"')+'>'+a+'</button>'
       }).join('')+'</div></div>'}).join('');
 
-    h+='<div class="sec">月イチ <span style="font-weight:400">'+MO.filter(function(t){return moDone[t.id]}).length+'/'+MO.length+'</span></div>';
-    h+='<div class="mo-acts">'+MO.map(function(t){var w=moDone[t.id];
-      return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'" data-mkey="'+t.id+'">'+t.n+'</button>'
+    h+='<div class="sec">月イチ <span style="font-weight:400">'+MO.filter(function(t){return cM[t.id]}).length+'/'+MO.length+'</span></div>';
+    h+='<div class="mo-acts">'+MO.map(function(t){var w=cM[t.id];
+      return'<button class="act'+(w==='a'?' da':w==='b'?' db':'')+'"'+(past?'':' data-mkey="'+t.id+'"')+'>'+t.n+'</button>'
     }).join('')+'</div>';
+    h+=(past?'</div>':'');
 
     document.getElementById('v1').innerHTML=h;
     document.getElementById('v1').hidden=false;
@@ -212,10 +256,10 @@ function render(){
 
     r+='<div class="sec">場所別</div>';
     r+=P.map(function(p){
-      var acts=(p.a||A).filter(function(a){return done[p.id+'-'+a]});
+      var acts=(p.a||A).filter(function(a){return cD[p.id+'-'+a]});
       var inner='';
       if(acts.length){
-        inner=acts.map(function(a){var w=done[p.id+'-'+a];
+        inner=acts.map(function(a){var w=cD[p.id+'-'+a];
           return'<span class="rpt-tag r'+w+'">'+a+'</span>'}).join('');
       } else {
         inner='<span class="rpt-none">未実施</span>';
@@ -223,9 +267,9 @@ function render(){
       return'<div class="rpt-pl"><div class="rpt-pl-name">'+p.n+'</div><div class="rpt-pl-acts">'+inner+'</div></div>';
     }).join('');
 
-    var mFin=MO.filter(function(t){return moDone[t.id]});
+    var mFin=MO.filter(function(t){return cM[t.id]});
     r+='<div class="sec">月イチ <span style="font-weight:400">'+mFin.length+'/'+MO.length+'</span></div>';
-    r+=MO.map(function(t){var w=moDone[t.id];
+    r+=MO.map(function(t){var w=cM[t.id];
       return w?'<div class="rpt-pl"><div class="rpt-pl-acts"><span class="rpt-tag r'+w+'">'+t.n+'</span></div></div>'
         :'<div class="rpt-pl"><span class="rpt-none">'+t.n+'</span></div>'}).join('');
 
@@ -241,6 +285,8 @@ function setTab(t){tab=t;
 
 document.getElementById('t1').addEventListener('click',function(){setTab('tasks')});
 document.getElementById('t2').addEventListener('click',function(){setTab('report')});
+document.getElementById('navL').addEventListener('click',function(){navWeek(-1)});
+document.getElementById('navR').addEventListener('click',function(){navWeek(1)});
 
 document.getElementById('app').addEventListener('click',function(e){
   var wb=e.target.closest('.who-btn');
