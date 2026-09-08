@@ -88,8 +88,13 @@
   .dot.da{background:var(--a);border-color:var(--a)}
   .dot.db{background:var(--b);border-color:var(--b)}
   .tr-c{font-size:.82rem;font-weight:900;min-width:28px;text-align:right;flex-shrink:0}
-  .tr-c[data-dec]{cursor:pointer;padding:4px 0 4px 8px;-webkit-tap-highlight-color:transparent}
   .tr-c .tgt{font-size:.68rem;font-weight:400;color:var(--t2)}
+  .tr-dec{display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;margin-left:6px;border:1.5px solid var(--bd);
+    font-size:.82rem;font-weight:700;color:var(--t2);background:transparent;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+    font-family:var(--f);flex-shrink:0;vertical-align:middle}
+  .tr-dec:active{background:var(--bd)}
   .tr.done .tr-n{color:var(--t2)}
 
   .rpt-hero{text-align:center;margin-bottom:24px}
@@ -209,9 +214,11 @@ function taskRow(task,data,past){
       else h+='<span class="dot"></span>';
     }
     h+='</span>';
-    h+='<span class="tr-c"'+(past||tot<1?'':' data-dec="'+task.id+'"')+'>'+tot+'<span class="tgt">/'+task.t+'</span></span>';
+    h+='<span class="tr-c">'+tot+'<span class="tgt">/'+task.t+'</span></span>';
+    if(!past&&tot>0)h+='<button class="tr-dec" data-dec="'+task.id+'">−</button>';
   } else {
-    h+='<span class="tr-c"'+(past||tot<1?'':' data-dec="'+task.id+'"')+'>'+(tot||'')+'</span>';
+    h+='<span class="tr-c">'+(tot||'')+'</span>';
+    if(!past&&tot>0)h+='<button class="tr-dec" data-dec="'+task.id+'">−</button>';
   }
   h+='</div>';
   return h;
