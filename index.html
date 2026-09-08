@@ -88,6 +88,7 @@
   .dot.da{background:var(--a);border-color:var(--a)}
   .dot.db{background:var(--b);border-color:var(--b)}
   .tr-c{font-size:.82rem;font-weight:900;min-width:28px;text-align:right;flex-shrink:0}
+  .tr-c[data-dec]{cursor:pointer;padding:4px 0 4px 8px;-webkit-tap-highlight-color:transparent}
   .tr-c .tgt{font-size:.68rem;font-weight:400;color:var(--t2)}
   .tr.done .tr-n{color:var(--t2)}
 
@@ -208,9 +209,9 @@ function taskRow(task,data,past){
       else h+='<span class="dot"></span>';
     }
     h+='</span>';
-    h+='<span class="tr-c">'+tot+'<span class="tgt">/'+task.t+'</span></span>';
+    h+='<span class="tr-c"'+(past||tot<1?'':' data-dec="'+task.id+'"')+'>'+tot+'<span class="tgt">/'+task.t+'</span></span>';
   } else {
-    h+='<span class="tr-c">'+(tot||'')+'</span>';
+    h+='<span class="tr-c"'+(past||tot<1?'':' data-dec="'+task.id+'"')+'>'+(tot||'')+'</span>';
   }
   h+='</div>';
   return h;
@@ -289,6 +290,15 @@ document.getElementById('navR').addEventListener('click',function(){navWeek(1)})
 document.getElementById('app').addEventListener('click',function(e){
   var wb=e.target.closest('.who-btn');
   if(wb){me=wb.dataset.me;svMe();render();return}
+
+  var dec=e.target.closest('[data-dec]');
+  if(dec){
+    var did=dec.dataset.dec;
+    if(!kd[did])kd[did]={};
+    var mc=gc(kd,did,me);
+    if(mc>0){kd[did][me]=mc-1;if(kd[did][me]===0)delete kd[did][me];
+      if(!kd[did]||Object.keys(kd[did]).length===0)delete kd[did];
+      svKd();render();}return}
 
   var row=e.target.closest('.tr[data-tid]');
   if(!row)return;
