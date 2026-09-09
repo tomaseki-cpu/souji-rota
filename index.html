@@ -214,6 +214,8 @@ function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)
 function tappedToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');return r[tid]===todayKey()}catch(e){return false}}
 function markTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');r[tid]=todayKey();localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
 function unmarkTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');delete r[tid];localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
+function decToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_dec')||'{}');return r[tid]===todayKey()}catch(e){return false}}
+function markDec(tid){try{var r=JSON.parse(localStorage.getItem('souji_dec')||'{}');r[tid]=todayKey();localStorage.setItem('souji_dec',JSON.stringify(r))}catch(e){}}
 
 function navWeek(dir){
   vOff+=dir;if(vOff>0)vOff=0;
@@ -355,11 +357,12 @@ document.getElementById('app').addEventListener('click',function(e){
   var dec=e.target.closest('[data-dec]');
   if(dec){
     var did=dec.dataset.dec;
+    if(decToday(did))return;
     if(!kd[did])kd[did]={};
     var mc=gc(kd,did,me);
     if(mc>0){kd[did][me]=mc-1;if(kd[did][me]===0)delete kd[did][me];
       if(!kd[did]||Object.keys(kd[did]).length===0)delete kd[did];
-      unmarkTap(did);svKd();render();}return}
+      markDec(did);unmarkTap(did);svKd();render();}return}
 
   var row=e.target.closest('.tr[data-tid]');
   if(!row)return;
