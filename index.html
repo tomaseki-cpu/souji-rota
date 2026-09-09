@@ -59,10 +59,8 @@
 
   .prog{margin-bottom:20px}
   .prog-bar{height:8px;background:var(--bd);width:100%;overflow:hidden}
-  .prog-fill{height:100%;display:flex}
-  .prog-fa{background:var(--a);transition:width .3s}
-  .prog-fb{background:var(--b);transition:width .3s}
-  .prog-n{font-size:.78rem;font-weight:700;color:var(--t2);text-align:center;margin-top:6px}
+  .prog-fill{height:100%;background:var(--tx);transition:width .3s}
+  .prog-n{font-size:.72rem;font-weight:700;color:var(--t2);text-align:center;margin-top:6px}
 
   .tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:24px}
   .tab{flex:1;font-family:var(--f);font-size:.8rem;font-weight:400;color:var(--t2);
@@ -279,14 +277,9 @@ function render(){
     '<button class="who-btn wb'+(me==='b'?' on':'')+'" data-me="b"><span>'+nm.b+'</span><span class="who-n">'+bPct+'%</span></button></div>';
 
   var totalPct=T.length?Math.round((aProg+bProg)/T.length*100):0;
-  var aPctBar=T.length?((aProg/T.length)*100):0;
-  var bPctBar=T.length?((bProg/T.length)*100):0;
   document.getElementById('prog').innerHTML='<div class="prog">'+
-    '<div class="prog-bar"><div class="prog-fill">'+
-    '<div class="prog-fa" style="width:'+aPctBar+'%"></div>'+
-    '<div class="prog-fb" style="width:'+bPctBar+'%"></div>'+
-    '</div></div>'+
-    '<div class="prog-n">'+totalPct+'%</div></div>';
+    '<div class="prog-bar"><div class="prog-fill" style="width:'+totalPct+'%"></div></div>'+
+    '<div class="prog-n">全体の達成率 '+totalPct+'%</div></div>';
 
   if(tab==='tasks'){
     var h='<div class="sec" style="color:var(--a)">'+nm.a+'のタスク</div>';
