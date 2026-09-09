@@ -246,9 +246,11 @@ function render(){
   TB.forEach(function(t){if(isDone(cD,t))bDone++});
   var allDone=aDone+bDone;
 
+  var aPct=aAll?Math.round(aDone/aAll*100):0;
+  var bPct=bAll?Math.round(bDone/bAll*100):0;
   document.getElementById('who').innerHTML='<div class="who">'+
-    '<button class="who-btn wa'+(me==='a'?' on':'')+'" data-me="a"><span>'+nm.a+'</span><span class="who-n">'+aDone+'/'+aAll+'</span></button>'+
-    '<button class="who-btn wb'+(me==='b'?' on':'')+'" data-me="b"><span>'+nm.b+'</span><span class="who-n">'+bDone+'/'+bAll+'</span></button></div>';
+    '<button class="who-btn wa'+(me==='a'?' on':'')+'" data-me="a"><span>'+nm.a+'</span><span class="who-n">'+aPct+'%</span></button>'+
+    '<button class="who-btn wb'+(me==='b'?' on':'')+'" data-me="b"><span>'+nm.b+'</span><span class="who-n">'+bPct+'%</span></button></div>';
 
   document.getElementById('prog').innerHTML='<div class="prog">'+
     T.map(function(t){return'<div class="sq'+(isDone(cD,t)?(t.p==='a'?' sa':' sb'):'')+'"></div>'}).join('')+
