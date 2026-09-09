@@ -83,7 +83,7 @@
   .tr-n{font-size:.82rem;font-weight:700;display:block;line-height:1.3}
   .tr-f{font-size:.62rem;font-weight:700;padding:2px 8px;letter-spacing:.04em;
     margin-left:6px;display:inline-block;vertical-align:middle}
-  .tr.daily .tr-f{color:var(--t2);border:1px solid var(--bd)}
+  .tr.daily .tr-f{color:var(--tx);background:var(--bd)}
   .tr.pa:not(.daily) .tr-f{background:var(--a);color:#fff}
   .tr.pb:not(.daily) .tr-f{background:var(--b);color:#fff}
   .tr-dots{display:flex;gap:3px;align-items:center;margin-right:8px;flex-shrink:0}
@@ -167,7 +167,7 @@ var fbDb=firebase.database();
 var T=[
   {id:'cook',n:'料理',p:'a',t:7,f:'毎日'},
   {id:'dish',n:'食器洗い・片付け',p:'a',t:7,f:'毎日'},
-  {id:'entrance',n:'玄関・靴',p:'a',t:0},
+  {id:'entrance',n:'玄関・靴',p:'a',t:0,f:'随時'},
   {id:'living',n:'リビング・ダイニング片付け',p:'b',t:7,f:'毎日'},
   {id:'sweep',n:'掃除機 / ワイパー',p:'b',t:3,f:'週3'},
   {id:'toilet',n:'トイレ掃除',p:'b',t:1,f:'週1'},
