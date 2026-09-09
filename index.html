@@ -57,11 +57,12 @@
   .who-btn.wb.on{border-color:var(--b);background:var(--b);color:#fff}
   .who-btn:not(.on):active{transform:scale(.98)}
 
-  .prog{display:flex;align-items:center;gap:4px;justify-content:center;margin-bottom:20px}
-  .sq{width:16px;height:16px;border:1.5px solid var(--bd);transition:background .2s,border-color .2s}
-  .sq.sa{background:var(--a);border-color:var(--a)}
-  .sq.sb{background:var(--b);border-color:var(--b)}
-  .prog-n{font-size:.78rem;font-weight:700;color:var(--t2);margin-left:8px}
+  .prog{margin-bottom:20px}
+  .prog-bar{height:8px;background:var(--bd);width:100%;overflow:hidden}
+  .prog-fill{height:100%;display:flex}
+  .prog-fa{background:var(--a);transition:width .3s}
+  .prog-fb{background:var(--b);transition:width .3s}
+  .prog-n{font-size:.78rem;font-weight:700;color:var(--t2);text-align:center;margin-top:6px}
 
   .tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:24px}
   .tab{flex:1;font-family:var(--f);font-size:.8rem;font-weight:400;color:var(--t2);
@@ -277,9 +278,15 @@ function render(){
     '<button class="who-btn wa'+(me==='a'?' on':'')+'" data-me="a"><span>'+nm.a+'</span><span class="who-n">'+aPct+'%</span></button>'+
     '<button class="who-btn wb'+(me==='b'?' on':'')+'" data-me="b"><span>'+nm.b+'</span><span class="who-n">'+bPct+'%</span></button></div>';
 
+  var totalPct=T.length?Math.round((aProg+bProg)/T.length*100):0;
+  var aPctBar=T.length?((aProg/T.length)*100):0;
+  var bPctBar=T.length?((bProg/T.length)*100):0;
   document.getElementById('prog').innerHTML='<div class="prog">'+
-    T.map(function(t){return'<div class="sq'+(isDone(cD,t)?(t.p==='a'?' sa':' sb'):'')+'"></div>'}).join('')+
-    '<span class="prog-n">'+allDone+'/'+T.length+'</span></div>';
+    '<div class="prog-bar"><div class="prog-fill">'+
+    '<div class="prog-fa" style="width:'+aPctBar+'%"></div>'+
+    '<div class="prog-fb" style="width:'+bPctBar+'%"></div>'+
+    '</div></div>'+
+    '<div class="prog-n">'+totalPct+'%</div></div>';
 
   if(tab==='tasks'){
     var h='<div class="sec" style="color:var(--a)">'+nm.a+'のタスク</div>';
