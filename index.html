@@ -81,7 +81,10 @@
   .past .tr:active{opacity:1}
   .tr-info{flex:1;min-width:0}
   .tr-n{font-size:.82rem;font-weight:700;display:block;line-height:1.3}
-  .tr-f{font-size:.6rem;font-weight:400;color:var(--t2);letter-spacing:.02em}
+  .tr.daily{background:rgba(128,128,128,.04)}
+  .tr.daily .tr-f{font-size:.58rem;font-weight:300;color:var(--t2)}
+  .tr:not(.daily) .tr-f{font-size:.58rem;font-weight:700;padding:1px 6px;
+    border:1.5px solid var(--bd);letter-spacing:.04em;margin-left:4px}
   .tr-dots{display:flex;gap:3px;align-items:center;margin-right:8px;flex-shrink:0}
   .dot{width:7px;height:7px;border:1.5px solid var(--bd);flex-shrink:0;transition:all .15s}
   .dot.da{background:var(--a);border-color:var(--a)}
@@ -207,7 +210,7 @@ function navWeek(dir){
 function taskRow(task,data,past){
   var ca=gc(data,task.id,'a'),cb=gc(data,task.id,'b'),tot=ca+cb;
   var done=isDone(data,task);
-  var h='<div class="tr p'+task.p+(done?' done':'')+'"'+(past?'':' data-tid="'+task.id+'"')+'>';
+  var h='<div class="tr p'+task.p+(done?' done':'')+(task.t===7?' daily':'')+'"'+(past?'':' data-tid="'+task.id+'"')+'>';
   h+='<span class="tr-info"><span class="tr-n">'+task.n+'</span>';
   if(task.f)h+=' <span class="tr-f">'+task.f+'</span>';
   h+='</span>';
