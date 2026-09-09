@@ -83,7 +83,7 @@
   .tr-n{font-size:.82rem;font-weight:700;display:block;line-height:1.3}
   .tr-f{font-size:.62rem;font-weight:700;padding:2px 8px;letter-spacing:.04em;
     margin-left:6px;display:inline-block;vertical-align:middle}
-  .tr.daily .tr-f{color:var(--tx);background:var(--bd)}
+  .tr.daily .tr-f{color:#fff;background:#E67E22}
   .tr.pa:not(.daily) .tr-f{background:var(--a);color:#fff}
   .tr.pb:not(.daily) .tr-f{background:var(--b);color:#fff}
   .tr-dots{display:flex;gap:3px;align-items:center;margin-right:8px;flex-shrink:0}
@@ -383,9 +383,11 @@ try{me=localStorage.getItem('souji_me')||'a'}catch(e){}
 render();
 
 var el=document.getElementById('sync');
+fbDb.ref('kaji/'+wk()).once('value',function(snap){
+  kd=snap.val()||{};cleanKd();
+});
 fbDb.ref('kaji/'+wk()).on('value',function(snap){
   kd=snap.val()||{};
-  cleanKd();
   el.textContent='同期中';el.classList.add('on');
   render();
 },function(){el.textContent='オフライン'});
