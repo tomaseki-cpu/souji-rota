@@ -257,7 +257,7 @@ function render(){
   var past=vOff<0;
   var cD=past?(vKd||{}):kd;
 
-  document.getElementById('date').innerHTML=dateLabel()+(past?'<span class="past-badge">過去</span>':'');
+  document.getElementById('date').innerHTML=dateLabel()+(past?'<span class="past-badge">過去</span>':'<span class="past-badge" style="background:var(--a);color:#fff">今週</span>');
   document.getElementById('navR').classList.toggle('off',vOff>=0);
 
   var aDone=0,bDone=0,aAll=TA.length,bAll=TB.length;
