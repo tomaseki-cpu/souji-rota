@@ -210,6 +210,10 @@ function cleanKd(){
   if(dirty){svKd();render()}
 }
 function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function tappedToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');return r[tid]===todayKey()}catch(e){return false}}
+function markTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');r[tid]=todayKey();localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
+function unmarkTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');delete r[tid];localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
 
 function navWeek(dir){
   vOff+=dir;if(vOff>0)vOff=0;
@@ -355,7 +359,7 @@ document.getElementById('app').addEventListener('click',function(e){
     var mc=gc(kd,did,me);
     if(mc>0){kd[did][me]=mc-1;if(kd[did][me]===0)delete kd[did][me];
       if(!kd[did]||Object.keys(kd[did]).length===0)delete kd[did];
-      svKd();render();}return}
+      unmarkTap(did);svKd();render();}return}
 
   var row=e.target.closest('.tr[data-tid]');
   if(!row)return;
@@ -363,17 +367,18 @@ document.getElementById('app').addEventListener('click',function(e){
   var task=T.find(function(x){return x.id===tid});
   if(!task)return;
   if(task.p!==me)return;
+  if(tappedToday(tid))return;
   if(!kd[tid])kd[tid]={};
   var myC=gc(kd,tid,me),tot=tc(kd,tid);
 
   if(task.t===1){
     if(myC>0){kd[tid][me]=0}else{kd[tid][me]=1}
   } else if(task.t>1){
-    if(tot>=task.t&&myC>0){kd[tid][me]=myC-1}
-    else{kd[tid][me]=myC+1}
+    kd[tid][me]=myC+1;
   } else {
-    if(myC>0){kd[tid][me]=myC-1}else{kd[tid][me]=1}
+    kd[tid][me]=myC+1;
   }
+  markTap(tid);
 
   if(kd[tid][me]===0)delete kd[tid][me];
   if(!kd[tid]||Object.keys(kd[tid]).length===0)delete kd[tid];
