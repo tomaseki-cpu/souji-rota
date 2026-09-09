@@ -198,6 +198,16 @@ function tc(data,tid){return gc(data,tid,'a')+gc(data,tid,'b')}
 function isDone(data,task){var tot=tc(data,task.id);return task.t>0?tot>=task.t:tot>0}
 
 function svKd(){fbDb.ref('kaji/'+wk()).set(kd)}
+function cleanKd(){
+  var dirty=false;
+  T.forEach(function(t){
+    if(!kd[t.id])return;
+    var wrong=t.p==='a'?'b':'a';
+    if(kd[t.id][wrong]){delete kd[t.id][wrong];dirty=true}
+    if(Object.keys(kd[t.id]).length===0){delete kd[t.id];dirty=true}
+  });
+  if(dirty){svKd();render()}
+}
 function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
 
 function navWeek(dir){
@@ -375,6 +385,7 @@ render();
 var el=document.getElementById('sync');
 fbDb.ref('kaji/'+wk()).on('value',function(snap){
   kd=snap.val()||{};
+  cleanKd();
   el.textContent='同期中';el.classList.add('on');
   render();
 },function(){el.textContent='オフライン'});
