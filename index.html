@@ -290,27 +290,28 @@ function render(){
     document.getElementById('v2').hidden=true;
     document.getElementById('v3').hidden=true;
   } else if(tab==='report'){
-    var r='<div class="rpt-hero"><div class="rpt-big">'+allDone+'</div>'+
-      '<div class="rpt-of">/ '+T.length+' タスク達成</div></div>';
+    var allPct=T.length?Math.round((aProg+bProg)/T.length*100):0;
+    var r='<div class="rpt-hero"><div class="rpt-big">'+allPct+'%</div>'+
+      '<div class="rpt-of">全体の進捗</div></div>';
     r+='<div class="rpt-stats">'+
-      '<div class="rpt-st sa"><div class="rpt-st-n">'+nm.a+'</div><div class="rpt-st-num">'+aDone+'/'+aAll+'</div></div>'+
-      '<div class="rpt-st sb"><div class="rpt-st-n">'+nm.b+'</div><div class="rpt-st-num">'+bDone+'/'+bAll+'</div></div></div>';
+      '<div class="rpt-st sa"><div class="rpt-st-n">'+nm.a+'</div><div class="rpt-st-num">'+aPct+'%</div></div>'+
+      '<div class="rpt-st sb"><div class="rpt-st-n">'+nm.b+'</div><div class="rpt-st-num">'+bPct+'%</div></div></div>';
 
     r+='<div class="sec" style="color:var(--a)">'+nm.a+'のタスク</div>';
     r+=TA.map(function(t){
       var tot=tc(cD,t.id),done=isDone(cD,t);
-      var label=t.t>0?tot+'/'+t.t:(tot>0?tot+'回':'');
+      var pct=t.t>0?Math.round(Math.min(tot/t.t,1)*100):(tot>0?100:0);
       return'<div class="rpt-row"><span class="rpt-row-n">'+t.n+'</span>'+
-        (done?'<span class="rpt-row-s rpt-ok">'+label+'</span>':'<span class="rpt-row-s rpt-ng">'+(label||'未実施')+'</span>')+
+        (done?'<span class="rpt-row-s rpt-ok">'+pct+'%</span>':'<span class="rpt-row-s rpt-ng">'+(pct>0?pct+'%':'未実施')+'</span>')+
         '</div>';
     }).join('');
 
     r+='<div class="sec" style="color:var(--b)">'+nm.b+'のタスク</div>';
     r+=TB.map(function(t){
       var tot=tc(cD,t.id),done=isDone(cD,t);
-      var label=t.t>0?tot+'/'+t.t:(tot>0?tot+'回':'');
+      var pct=t.t>0?Math.round(Math.min(tot/t.t,1)*100):(tot>0?100:0);
       return'<div class="rpt-row"><span class="rpt-row-n">'+t.n+'</span>'+
-        (done?'<span class="rpt-row-s rpt-ok b">'+label+'</span>':'<span class="rpt-row-s rpt-ng">'+(label||'未実施')+'</span>')+
+        (done?'<span class="rpt-row-s rpt-ok b">'+pct+'%</span>':'<span class="rpt-row-s rpt-ng">'+(pct>0?pct+'%':'未実施')+'</span>')+
         '</div>';
     }).join('');
 
