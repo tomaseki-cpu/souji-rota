@@ -338,8 +338,6 @@ document.getElementById('app').addEventListener('click',function(e){
   var dec=e.target.closest('[data-dec]');
   if(dec){
     var did=dec.dataset.dec;
-    var dt=T.find(function(x){return x.id===did});
-    if(dt&&dt.p!==me)return;
     if(!kd[did])kd[did]={};
     var mc=gc(kd,did,me);
     if(mc>0){kd[did][me]=mc-1;if(kd[did][me]===0)delete kd[did][me];
