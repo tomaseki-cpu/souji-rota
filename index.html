@@ -45,6 +45,14 @@
   .past-badge{display:inline-block;font-size:.58rem;font-weight:700;
     padding:2px 6px;background:var(--tx);color:var(--bg);margin-left:8px;letter-spacing:.04em;vertical-align:middle}
 
+  .days{display:flex;gap:4px;margin-bottom:12px}
+  .day-btn{flex:1;font-family:var(--f);font-size:.68rem;font-weight:700;
+    padding:6px 0;border:1.5px solid var(--bd);background:transparent;color:var(--t2);
+    cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;transition:all .12s}
+  .day-btn.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+  .day-btn.today{border-color:var(--a)}
+  .day-btn.future{opacity:.3;pointer-events:none}
+
   .who{display:flex;margin-bottom:16px}
   .who-btn{flex:1;display:flex;align-items:center;justify-content:space-between;
     font-family:var(--f);font-size:.92rem;font-weight:700;padding:14px 16px;
@@ -153,6 +161,7 @@
       <span class="nav-btn off" id="navR">▶</span>
     </div>
   </div>
+  <div id="days"></div>
   <div id="who"></div>
   <div id="prog"></div>
   <div class="tabs">
@@ -197,7 +206,7 @@ var TA=T.filter(function(x){return x.p==='a'});
 var TB=T.filter(function(x){return x.p==='b'});
 var DN=['日','月','火','水','木','金','土'];
 var nm={a:'とうま',b:'まどか'};
-var kd={},me='a',tab='tasks',vOff=0,vKd=null;
+var kd={},me='a',tab='tasks',vOff=0,vKd=null,selDay=0;
 
 function curMonday(){var d=new Date(),dy=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(dy===0?6:dy-1));return m}
 function wk(){var m=curMonday();return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
@@ -224,7 +233,9 @@ function cleanKd(){
   if(dirty){svKd();render()}
 }
 function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
-function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function selDate(){var m=curMonday();m.setDate(m.getDate()+selDay);return m}
+function todayKey(){var d=selDate();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function todayIdx(){var d=new Date(),dy=d.getDay();return dy===0?6:dy-1}
 function tappedToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');return r[tid]===todayKey()}catch(e){return false}}
 function markTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');r[tid]=todayKey();localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
 function unmarkTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');delete r[tid];localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
@@ -272,6 +283,23 @@ function render(){
   var cD=past?(vKd||{}):kd;
 
   document.getElementById('date').innerHTML=dateLabel()+(past?'<span class="past-badge">過去</span>':'<span class="past-badge" style="background:var(--a);color:#fff">今週</span>');
+
+  if(!past){
+    var ti=todayIdx();
+    var dh='<div class="days">';
+    var dayLabels=['月','火','水','木','金','土','日'];
+    for(var di=0;di<7;di++){
+      var dd=new Date(curMonday());dd.setDate(dd.getDate()+di);
+      var dl=dayLabels[di]+' '+(dd.getMonth()+1)+'/'+dd.getDate();
+      var cls='day-btn'+(di===selDay?' on':'')+(di===ti?' today':'')+(di>ti?' future':'');
+      dh+='<button class="'+cls+'" data-day="'+di+'">'+dl+'</button>';
+    }
+    dh+='</div>';
+    document.getElementById('days').innerHTML=dh;
+    document.getElementById('days').hidden=false;
+  } else {
+    document.getElementById('days').hidden=true;
+  }
   document.getElementById('navR').classList.toggle('off',vOff>=0);
 
   var aDone=0,bDone=0,aAll=TA.length,bAll=TB.length;
@@ -366,6 +394,9 @@ document.getElementById('navL').addEventListener('click',function(){navWeek(-1)}
 document.getElementById('navR').addEventListener('click',function(){navWeek(1)});
 
 document.getElementById('app').addEventListener('click',function(e){
+  var db=e.target.closest('.day-btn');
+  if(db){selDay=parseInt(db.dataset.day);render();return}
+
   var wb=e.target.closest('.who-btn');
   if(wb){me=wb.dataset.me;svMe();render();return}
 
@@ -404,6 +435,7 @@ document.getElementById('app').addEventListener('click',function(e){
 });
 
 try{me=localStorage.getItem('souji_me')||'a'}catch(e){}
+selDay=todayIdx();
 render();
 
 var el=document.getElementById('sync');
