@@ -236,11 +236,13 @@ function svMe(){try{localStorage.setItem('souji_me',me)}catch(e){}}
 function selDate(){var m=curMonday();m.setDate(m.getDate()+selDay);return m}
 function todayKey(){var d=selDate();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function todayIdx(){var d=new Date(),dy=d.getDay();return dy===0?6:dy-1}
-function tappedToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');return r[tid]===todayKey()}catch(e){return false}}
-function markTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');r[tid]=todayKey();localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
-function unmarkTap(tid){try{var r=JSON.parse(localStorage.getItem('souji_tap')||'{}');delete r[tid];localStorage.setItem('souji_tap',JSON.stringify(r))}catch(e){}}
-function decToday(tid){try{var r=JSON.parse(localStorage.getItem('souji_dec')||'{}');return r[tid]===todayKey()}catch(e){return false}}
-function markDec(tid){try{var r=JSON.parse(localStorage.getItem('souji_dec')||'{}');r[tid]=todayKey();localStorage.setItem('souji_dec',JSON.stringify(r))}catch(e){}}
+function tapStore(key){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch(e){return{}}}
+function tapSave(key,r){try{localStorage.setItem(key,JSON.stringify(r))}catch(e){}}
+function tappedToday(tid){var r=tapStore('souji_tap');var k=tid+'_'+todayKey();return!!r[k]}
+function markTap(tid){var r=tapStore('souji_tap');r[tid+'_'+todayKey()]=1;tapSave('souji_tap',r)}
+function unmarkTap(tid){var r=tapStore('souji_tap');delete r[tid+'_'+todayKey()];tapSave('souji_tap',r)}
+function decToday(tid){var r=tapStore('souji_dec');return!!r[tid+'_'+todayKey()]}
+function markDec(tid){var r=tapStore('souji_dec');r[tid+'_'+todayKey()]=1;tapSave('souji_dec',r)}
 
 function navWeek(dir){
   vOff+=dir;if(vOff>0)vOff=0;
